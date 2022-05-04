@@ -9,11 +9,11 @@ golang, Haskell, C, C++, Rust and many other languages. We remember MyISAMI and 
 cgi, php. And we know how to handle a lot of traffic with a few resources. 
 Most of our projects are related to financial operations - you can't lose any cent doing these things.
 
-We start our book to share our experience  with you.
+We start our book to share our experience with you.
 
-# Plan
+# Parts
 - Statically-typed protocols
-- Idempotency of requests
+- [Idempotency of requests](idempotent-operations/idempotent-operations.md)
 - Multiple sources of truth
 - Random is not random
 - Logs nightmares
