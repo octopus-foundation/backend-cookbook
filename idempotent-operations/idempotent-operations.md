@@ -2,27 +2,29 @@
 
 # Intro
 
-The main task of client-server communication is to maintain same state on client (is user authorised, etc) and server
-(e.g. in database or in memory). And there are some problems:
-- requests from client can be lost during communication
-- responses from server can bet lost during communication
+The main task of communication over network is to maintain same state on both sides. 
+And there are some problems:
+- "messages" from one side can be lost during communication
+- "answers" from the other side can bet lost during communication
 
-This is key problem.  So how to be sure, that client and server state is equal if some commands from client can lost during communication?
-Answer is simple - we should retry all requests from client until we got normal non-500 response status. It's common behaviour to be sure
-that server and client has exactly same state. There is common mistake on this behaviour: using "smart" throttling.
-If server respond with, for example, 503, some developers tried to call server with exponential time.
-Source of this behaviour, I think, was in "confirmation" and password entering tries. But this behaviour doesn't solve server problems at all at this case,
-it's just made them more invisible, and you cannot react faster and found what's exactly happened.
-So, you shouldn't use exponential time for retries, use constant time instead with some delay.
+For example - request from client may be lost because of network lag, backend restart, request may be sent to already dead backend and so on.
+Another example - proxy chain issues while server send response to client. Client can have very bad internet connection, something like GPRS or EDGE, 
+or using slow internet in roaming.
 
-But if we retry client request - action on server can be processed twice. Or, for example, deposit from billing callback
-can be added to user balance multiple times on each retry. So, we need to use idempotent actions on server.
+Another source of problems can backend exceptions: for example, your backend uses mysql and got "lock wait timeout", business logic was not
+executed.
+
+So how to be sure, that client and server state is equal?
+Answer is simple - we should retry all requests from client until we got normal, non-5xx response status.
+
+But there are footprint: if we retry client request - action on server can be processed twice or more.
+For example, payment may be requested multiple times or deposit from billing callback can be added to user balance multiple times on each retry.
+To solve these issues - you should use idempotent operations. 
+This is useful in many situations, especially when dealing with distributed systems where messages can be lost or delivered out of order.
 
 # Definition
 
 Idempotent operations are operations which can be applied multiple times without changing the result.
-This is useful in many situations, especially when dealing with distributed systems where messages can be lost or delivered out of order.
-
 For instance -  multiplication by one is such an operation, because no matter how many times it is applied, the result is always the same.
 
 ```go
@@ -36,6 +38,18 @@ func main() {
 }
 ```
 
+Each idempotent request should have unique "Trx" - operation id. We will talk about it later.
+
+# When to use idempotency
+- client-server communication
+- eventbus messages processing
+- external apis execution
+- callbacks from external apis
+
+In short - in every case when you need to be sure, that other part got your message and process it.
+
+## client-server communication 
+
 In the context of a client-server setup, idempotent operations are especially important.
 This is because when a client makes a request to a server, it is not always guaranteed that the request will reach the server,
 or that the server will process it or that client will get response. If the client makes the same request multiple times,
@@ -44,7 +58,7 @@ it is important that the server can handle it without changing the result.
 For example, consider a situation where a client makes a request to a server to create a new user.
 If the server does not receive the request, or if the request is lost in transit, the client may resend the request.
 In this case, there are two key points:
-1. it is important that client should retry request until got some non-500 response
+1. it is important that client should retry request until got some non-5xx response
 2. it is important that the server can handle the request idempotently, so that creating the user only happens once
 
 Simple example in go:
@@ -82,10 +96,33 @@ func (s *Server) doSomething(clientRequest *Request) (*Response, error) {
 }
 ```
 
-In the code above idempotency is used to ensure `doSomething` will be called only once for each tax value.
+In the code above idempotency is used to ensure `doSomething` will be called only once for each trx value.
 
 Please note, code above doesn't ensure `doSomething` for the same request won't be executed multiple times.
 In order to achieve the letter locking or queue-style processing have to be used.
+
+## eventbus processing
+TODO
+
+## external apis execution
+Very often external apis doesn't support idempotency at all, but you need consistent state between your app and external api.
+It also can be solved using trx-es, just choose correct trx generation based on request. Hash of request body can be good solution.
+
+Simple example in go:
+```go
+func callExternalApi() (Response, error) {
+    body := []byte("some request body")
+    hash := sha1.Sum(body)
+    s.cacheLock.RLock()
+    resp, exists := s.requestCache[hash]
+    s.cacheLock.RUnLock()
+	
+	// and as usual - process and store result in cache + return
+}
+```
+
+## callbacks processing
+External system callbacks (e.g. Slack webhooks, etc) - should also be handled idempotently. It's same case as client-server processing.
 
 # TRX id generation
 
@@ -93,8 +130,8 @@ In order to achieve the letter locking or queue-style processing have to be used
 Worst case of trx because collision probability is too high.
 
 ## UUID
-Best algorithm for unique trx generation is UUID. It's simple, fast, has implementation on almost all languages and 
-probability of collision is very low. Also, you can dramatically decrease collision probability just specifying the context 
+Best algorithm for unique trx generation is UUID. It's simple, fast, has implementation on almost all languages and
+probability of collision is very low. Also, you can dramatically decrease collision probability just specifying the context
 of uuids. For example - per user or per site. Probability of UUID v4 collision is still 1 in 100 billion
 if you generate just 1 billion UUIDs.
 
@@ -107,8 +144,11 @@ but different time. It's not big problem, but you should think about it before i
 To achieve "exactly-once" request processing you can use queues or mutexes, depends on context and task. 
 In general - there are no difference at all: your goal is executing trx-ed operations one by one, it's not matter how to achieve it.
 
+// TODO: some examples of both cases
+
 # Common mistakes
 
+## Wrong "place"
 Common mistake in idempotency implementation is to return something like ALREADY_PROCESSED response, but not the original
 response. It's not idempotency! For example in user registration by email. You have registration request processing:
 
@@ -155,6 +195,13 @@ func (s *Server) processRegistration(clientRequest *RegRequest) (*Response, erro
 ```
 
 So if client send register request with same trx - it should ALWAYS get same response. As 5 * 1 * 1 * 1.
+
+## Complex retry strategies
+There is common mistake on this behaviour: using "smart" throttling.
+If server respond with, for example, 503, some developers tried to call server with exponential time.
+Source of this behaviour, I think, was in "confirmation" and password entering tries. But this behaviour doesn't solve server problems at all at this case,
+it's just made them more invisible, and you cannot react faster and found what's exactly happened.
+So, you shouldn't use exponential time for retries, use constant time instead with some delay.
 
 # TRX Expiration
 Good practice is to use some expiration of trx cache - just not to overuse memory. Simple solution for expired cache using go language looks like this:
@@ -258,14 +305,28 @@ trx cache for users or for external callbacks. If you use just one trx store whi
 # Databases transactions and idempotency
 
 At first glance - it looks like to be a good practice to make idempotency using transactions and relational databases, 
-but "duplicate key exception" breaks main idempotency principles! If you send one request multiple times in parallel and 
-will check "is row with this trx exists" you can get multiple "no, this row not exists", based on your database, 
-transactions isolation level and so one, so you will need shared locks, for example from redis. 
+but "duplicate key exception" breaks main idempotency principles! 
+If you send one request multiple times in parallel and will check "is row with this trx exists" you can get multiple "no, this row not exists", based on your database, 
+transactions isolation level and so on, so you will need shared locks, for example from redis. 
 It's hard to support and understand sometimes - so you always should ask yourself: 
 can I just use one simple app and in-memory trx protector to achieve idempotency, or I should really use something like shared locks?
 
-# External apis and idempotency
+If you really need persistent trx protector, you should never forget about idempotency.
 
-Very often external apis doesn't support idempotency at all, but you need consistent state between your app and external api.
-It also can be solved using our trx protector, just choose correct trx generation based on request. In this case - hash of request body can be good solution.
- 
+For example:
+```go
+func (d *DepositProcessor) Process(request *Request) (*Response, error) {
+	if d.store.IsProcessed(request) {
+        return nil, fmt.Errorf("deposit already processed")
+    }
+	...
+}
+```
+
+Is not idempotent processing at all. For same request it will return different responses.
+And you need to implement custom logic. Real-life example:
+One payment system always return royalty information in deposit request http action.
+But if deposit already created, they just return smth like "ALREADY_PROCESSED" response and you need
+to go to the another api and ask this info.
+If they API will be idempotent - just one simple retry will be required at all. 
+
