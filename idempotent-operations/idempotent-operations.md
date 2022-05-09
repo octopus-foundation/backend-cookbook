@@ -22,6 +22,15 @@ For example, payment may be requested multiple times or deposit from billing cal
 To solve these issues - you should use idempotent operations. 
 This is useful in many situations, especially when dealing with distributed systems where messages can be lost or delivered out of order.
 
+Real-life example:
+```
+me: please, add trx to registration request
+collegue: for what? 
+me: if smth lost, client can get "EMAIL_USED" error
+collegue: it's not a problem, it's normal
+collegue: all sites works like this
+```
+
 # Definition
 
 Idempotent operations are operations which can be applied multiple times without changing the result.
@@ -102,7 +111,10 @@ Please note, code above doesn't ensure `doSomething` for the same request won't 
 In order to achieve the letter locking or queue-style processing have to be used.
 
 ## eventbus processing
-TODO
+
+The key idea of implementation "exactly-once" messaging processing - is to implement idempotency on 
+consumer-side.
+// TODO: describe more
 
 ## external apis execution
 Very often external apis doesn't support idempotency at all, but you need consistent state between your app and external api.
@@ -139,12 +151,6 @@ if you generate just 1 billion UUIDs.
 You can use body hash to use body as trx, but please note, that you may have some race conditions.
 For example, if you have some callback from payment system, then you may receive multiple calls with same data,
 but different time. It's not big problem, but you should think about it before implementation.
-
-# Exactly once processing
-To achieve "exactly-once" request processing you can use queues or mutexes, depends on context and task. 
-In general - there are no difference at all: your goal is executing trx-ed operations one by one, it's not matter how to achieve it.
-
-// TODO: some examples of both cases
 
 # Common mistakes
 

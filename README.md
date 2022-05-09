@@ -2,7 +2,7 @@
 We are a team of high-skilled developers with more than 15 years in highload. 
 We have developed thousands of projects, most of them work 10+ years, without  big issues. 
 Without devops, without system administrators and big teams. Usually any developer in our team can solve all problems 
-related to any very old project. We do not have processes. We have only results. And we are proud of that.
+related to any very old project. We do not have processes, we have only results. And we are proud of that.
 
 We used a lot of technologies within years. We have production on Erlang, Clojure, Perl, Php, Java, Kotlin, 
 golang, Haskell, C, C++, Rust and many other languages. We remember MyISAMI and MySQL locks hell, we remember Apache, 
@@ -13,13 +13,12 @@ We start our book to share our experience with you.
 
 # Parts
 - Statically-typed protocols
-- [Idempotency of requests](idempotent-operations/idempotent-operations.md)
-- Multiple sources of truth
+- [Idempotency](idempotent-operations/idempotent-operations.md)
+- [Relational databases](relational-databases/relational-databases.md)
+- [Error handling](error-handling/error-handling.md)
 - Random is not random
-- Logs nightmares
 - Keep it as simple as you can
 - Money amounts and exchange
-- Relational database structure
 - Processing API requests
 - Processing event stream
 - Designing KVS
