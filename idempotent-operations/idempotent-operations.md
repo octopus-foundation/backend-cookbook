@@ -3,8 +3,8 @@
 # Intro
 
 The main task of communication over the network is to maintain the same state on both sides. But there are some problems:
-"messages" from one side can be lost during communication
-"answers" from the other side can be lost during communication
+- "messages" from one side can be lost during communication
+- "answers" from the other side can be lost during communication
 For example, a request from the client may be lost due to network lag or a backend restart, or a request may already have been sent to a dead backend and so on. 
 Another example would be proxy chain issues occurring while the server sends a response to the client. The client could have a very bad internet connection, 
 for instance using GPRS or EDGE, or be using a slow internet connection while roaming.
