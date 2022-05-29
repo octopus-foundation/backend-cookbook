@@ -1,15 +1,16 @@
 # Intro
-We are a team of high-skilled developers with more than 15 years in highload. 
-We have developed thousands of projects, most of them work 10+ years, without  big issues. 
-Without devops, without system administrators and big teams. Usually any developer in our team can solve all problems 
-related to any very old project. We do not have processes, we have only results. And we are proud of that.
+We are a team of highly skilled developers with more than 15 years experience in highload. 
+We have developed thousands of projects, most of them running for more than 10 years without any major issues. 
+All this without devops, without system administrators or large teams. 
+Usually, any developer on our team can solve all problems related to any project, regardless of how old that project is. 
+We do not have processes, we only have results. And we are proud of that.
 
-We used a lot of technologies within years. We have production on Erlang, Clojure, Perl, Php, Java, Kotlin, 
-golang, Haskell, C, C++, Rust and many other languages. We remember MyISAMI and MySQL locks hell, we remember Apache, 
-cgi, php. And we know how to handle a lot of traffic with a few resources. 
-Most of our projects are related to financial operations - you can't lose any cent doing these things.
+We’ve used a lot of technologies over the years. We have productions based on Erlang, Clojure, Perl, Php, Java, Kotlin, 
+golang, Haskell, C, C++, Rust and many other languages. We remember MyISAMI and MySQL locks hell, we remember Apache, cgi and php. 
+And we know how to handle a lot of traffic with few resources. 
+Most of our projects are related to financial operations - you can't lose a single cent when you work on these types of projects.
 
-We start our book to share our experience with you.
+We decided to write our book to share our experiences with you
 
 # Parts
 - Statically-typed protocols
@@ -22,8 +23,9 @@ We start our book to share our experience with you.
 - Processing API requests
 - Processing event stream
 - Designing KVS
-- Callbacks
+- [Webhooks](webhooks/webhooks.md)
 - Vendoring
+- Naming. (isNewForm2=true)
 
 # Support us
 You can support us using cryptocurrencies:
