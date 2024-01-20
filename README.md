@@ -1,13 +1,11 @@
 # Intro
-We are a team of highly skilled developers with more than 15 years experience in highload. 
+We are a team of highly skilled developers with more than 15 years experience in high availability. 
 We have developed thousands of projects, most of them running for more than 10 years without any major issues. 
-All this without devops, without system administrators or large teams. 
-Usually, any developer on our team can solve all problems related to any project, regardless of how old that project is. 
-We do not have processes, we only have results. And we are proud of that.
 
 We’ve used a lot of technologies over the years. We have productions based on Erlang, Clojure, Perl, Php, Java, Kotlin, 
 golang, Haskell, C, C++, Rust and many other languages. We remember MyISAMI and MySQL locks hell, we remember Apache, cgi and php. 
-And we know how to handle a lot of traffic with few resources. 
+And we know how to handle a lot of traffic with few resources.
+
 Most of our projects are related to financial operations - you can't lose a single cent when you work on these types of projects.
 
 We decided to write our book to share our experiences with you
@@ -17,6 +15,7 @@ We decided to write our book to share our experiences with you
 - [Idempotency](idempotent-operations/idempotent-operations.md)
 - [Relational databases](relational-databases/relational-databases.md)
 - [Error handling](error-handling/error-handling.md)
+- [Floats](floats/floats.md)
 - Random is not random
 - Keep it as simple as you can
 - Money amounts and exchange
